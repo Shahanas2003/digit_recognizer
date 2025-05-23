@@ -6,7 +6,7 @@ import os
 
 # App title
 st.set_page_config(page_title="Digit Classifier", page_icon="✍️")
-st.title("🧠 Handwritten Digit Classifier (Logistic Regression)")
+st.title("Handwritten Digit Classifier")
 
 st.markdown("""
 Upload an image of a handwritten digit (28x28 pixels, grayscale). The model will predict the digit using Logistic Regression.
@@ -38,4 +38,4 @@ if uploaded_file:
 
     # Predict
     prediction = model.predict(img_flattened)[0]
-    st.success(f"✅ Predicted Digit: **{prediction}**")
+    st.success(f" Predicted Digit: **{prediction}**")
