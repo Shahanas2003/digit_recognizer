@@ -1,6 +1,5 @@
-
 streamlit
-scikit-learn
 joblib
-pillow
+scikit-learn
 numpy
+pillow
