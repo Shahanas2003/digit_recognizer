@@ -1,41 +1,34 @@
 import streamlit as st
+import joblib
 import numpy as np
-import pandas as pd
-from sklearn.linear_model import LogisticRegression
-from sklearn.preprocessing import StandardScaler
-from sklearn.metrics import accuracy_score, confusion_matrix
-from sklearn.model_selection import train_test_split
-from sklearn.datasets import fetch_openml
-import seaborn as sns
-import matplotlib.pyplot as plt
+from PIL import Image, ImageOps
 
-st.title("🖊️ Handwritten Digit Classifier (Logistic Regression)")
+# Load the trained Random Forest model
+model = joblib.load("random_forest_mnist.pkl")
 
-@st.cache_data
-def load_data():
-    mnist = fetch_openml('mnist_784', version=1)
-    X = mnist.data
-    y = mnist.target.astype(int)
-    return train_test_split(X, y, test_size=0.2, random_state=42)
+st.set_page_config(page_title="Digit Classifier", page_icon="✍️")
+st.title("🧠 Handwritten Digit Classifier")
 
-X_train, X_test, y_train, y_test = load_data()
+st.markdown("""
+Upload an image of a **handwritten digit** (0-9).  
+Make sure it's **centered and white on black background** like MNIST format.
+""")
 
-# Normalize data
-scaler = StandardScaler()
-X_train_scaled = scaler.fit_transform(X_train)
-X_test_scaled = scaler.transform(X_test)
+# File uploader
+uploaded_file = st.file_uploader("Choose a digit image", type=["png", "jpg", "jpeg"])
 
-# Train model
-model = LogisticRegression(max_iter=1000)
-model.fit(X_train_scaled, y_train)
+if uploaded_file:
+    image = Image.open(uploaded_file).convert('L')  # Convert to grayscale
 
-# Predict
-y_pred = model.predict(X_test_scaled)
-accuracy = accuracy_score(y_test, y_pred)
+    # Resize and invert (MNIST-style)
+    image = ImageOps.invert(image)
+    image = image.resize((28, 28))
+    st.image(image, caption='Processed Image', width=150)
 
-st.write(f"🎯 Accuracy: {accuracy:.4f}")
+    # Preprocess for model
+    img_array = np.array(image).astype('float32') / 255.0
+    img_flattened = img_array.reshape(1, -1)
 
-# Confusion matrix
-fig, ax = plt.subplots()
-sns.heatmap(confusion_matrix(y_test, y_pred), annot=True, fmt='d', cmap='Blues', ax=ax)
-st.pyplot(fig)
+    # Predict
+    prediction = model.predict(img_flattened)[0]
+    st.success(f"✅ Predicted Digit: **{prediction}**")
